@@ -13,9 +13,14 @@ export interface AppOptions {
   /** Built frontend to serve in production (web/dist). */
   staticDir?: string;
   authRateLimit?: { windowMs: number; max: number };
+  /**
+   * Origins allowed to call the API from a browser (e.g. the Flutter web
+   * build). Same-origin and native mobile clients don't need CORS at all.
+   */
+  corsOrigins?: string[];
 }
 
-export function createApp({ db, jwtSecret, staticDir, authRateLimit }: AppOptions) {
+export function createApp({ db, jwtSecret, staticDir, authRateLimit, corsOrigins = [] }: AppOptions) {
   const app = express();
   const tokens = new TokenService(jwtSecret);
 
@@ -27,6 +32,25 @@ export function createApp({ db, jwtSecret, staticDir, authRateLimit }: AppOption
     res.setHeader("Referrer-Policy", "no-referrer");
     next();
   });
+
+  if (corsOrigins.length) {
+    const allowed = new Set(corsOrigins);
+    app.use("/api", (req, res, next) => {
+      const origin = req.headers.origin;
+      if (origin && allowed.has(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Vary", "Origin");
+        res.setHeader("Access-Control-Allow-Headers", "authorization, content-type");
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
+        res.setHeader("Access-Control-Max-Age", "600");
+      }
+      if (req.method === "OPTIONS") {
+        res.status(204).end();
+        return;
+      }
+      next();
+    });
+  }
 
   app.get("/api/health", (_req, res) => {
     db.prepare("SELECT 1").get();

@@ -20,7 +20,12 @@ if (!jwtSecret) {
 
 mkdirSync(path.dirname(dbPath), { recursive: true });
 const db = openDb(dbPath);
-const app = createApp({ db, jwtSecret, staticDir: path.resolve(here, "../../web/dist") });
+const app = createApp({
+  db,
+  jwtSecret,
+  staticDir: path.resolve(here, "../../web/dist"),
+  corsOrigins: (process.env.CORS_ORIGINS ?? "").split(",").map((s) => s.trim()).filter(Boolean),
+});
 
 const server = app.listen(port, () => console.log(`taskflow API listening on http://localhost:${port}`));
 

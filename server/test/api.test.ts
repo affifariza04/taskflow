@@ -179,6 +179,17 @@ describe("api", () => {
     expect(res.body.error.code).toBe("invalid_json");
   });
 
+  it("allows CORS only for configured origins", async () => {
+    const cors = createApp({ db: openDb(), jwtSecret: SECRET, corsOrigins: ["http://localhost:5555"] });
+    const ok = await request(cors).options("/api/tasks").set("Origin", "http://localhost:5555");
+    expect(ok.status).toBe(204);
+    expect(ok.headers["access-control-allow-origin"]).toBe("http://localhost:5555");
+    const evil = await request(cors).options("/api/tasks").set("Origin", "https://evil.example");
+    expect(evil.headers["access-control-allow-origin"]).toBeUndefined();
+    const off = await request(app).get("/api/health").set("Origin", "http://localhost:5555");
+    expect(off.headers["access-control-allow-origin"]).toBeUndefined();
+  });
+
   it("sets security headers", async () => {
     const res = await request(app).get("/api/health");
     expect(res.headers["x-content-type-options"]).toBe("nosniff");

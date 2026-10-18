@@ -5,7 +5,7 @@
 ![react](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![express](https://img.shields.io/badge/Express-5-000000?logo=express)
 ![sqlite](https://img.shields.io/badge/SQLite-node%3Asqlite-003B57?logo=sqlite)
-![tests](https://img.shields.io/badge/tests-22%20passing-brightgreen)
+![tests](https://img.shields.io/badge/tests-23%20passing-brightgreen)
 ![license](https://img.shields.io/badge/license-MIT-blue)
 
 ![taskflow board](docs/screenshot.jpg)
@@ -18,6 +18,7 @@
 - **Optimistic UI:** moves and deletes render instantly and roll back if the API rejects them.
 - **Search and stats:** debounced full-text search, completion rate, and an overdue counter.
 - **Responsive, light and dark:** a single CSS file with design tokens and no UI framework.
+- **Mobile client:** a Flutter app for Android and iOS consumes the same API ([taskflow-mobile](https://github.com/affifariza04/taskflow-mobile)).
 
 ## Architecture
 
@@ -48,6 +49,8 @@ In production the API server also serves `web/dist` with an SPA fallback, so the
 | `DELETE` | `/api/tasks/:id` | `204` |
 | `GET` | `/api/tasks/stats` | `{ total, byStatus, overdue, completionRate }` |
 
+Browser clients on another origin (for example the Flutter web build) need `CORS_ORIGINS=https://app.example.com`. CORS is off by default, and native mobile apps don't need it.
+
 Every error has the same shape: `{ "error": { "code": "validation_error", "message": "...", "issues": [{ "path": "email", "message": "..." }] } }`.
 
 ## Run it
@@ -70,7 +73,7 @@ docker run -p 3001:3001 -e JWT_SECRET="$(openssl rand -hex 32)" -v taskflow-data
 ## Tests
 
 ```bash
-npm test             # 15 API tests (supertest, in-memory DB) + 7 board-logic tests
+npm test             # 16 API tests (supertest, in-memory DB) + 7 board-logic tests
 npm run typecheck
 ```
 
